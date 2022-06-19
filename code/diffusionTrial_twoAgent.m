@@ -1,9 +1,11 @@
 function [X1,X2,over1,over2,instant] = diffusionTrial_twoAgent(p,firstStop) 
-% p contains parameters. over1 is true if agent 1 decided on (+); over2 is 
-% true if agent 2 decided on (+). instant is a boolean indicating whether 
-% the second decision was made instantaneously after the first. firstStop
-% is a boolean indicating whether to stop computing after the first
-% decision is made (to save computing time).
+% firstStop is a boolean indicating whether to stop computing after the 
+% first decision is made (to save computing time).
+
+% over[1/2] is true if agent [1/2] decided at its upper threshold. instant 
+% is a boolean indicating whether the second decision was made 
+% instantaneously after the first. 
+
     dt = p.dt; mu1 = p.mu1; mu2 = p.mu2; D = p.D; qp = p.qp; qn = p.qn;
     H1 = p.H1; L1 = p.L1; H2 = p.H2; L2 = p.L2; 
 

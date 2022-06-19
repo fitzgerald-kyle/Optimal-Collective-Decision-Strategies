@@ -1,5 +1,8 @@
 function [X,over,dT] = diffusionTrial_oneAgent(p, agent) 
-% p contains parameters. over is true if the agent decided on (+)).
+% over is true if 'agent' decided at the upper threshold. X contains
+% the location at each time step and dT is the total elapsed time until a
+% decision is made.
+
     dt = p.dt; D = p.D;
     if agent == 1
         mu = p.mu1; H = p.H1; L = p.L1;  

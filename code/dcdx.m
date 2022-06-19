@@ -1,4 +1,9 @@
 function dcfunc = dcdx(p,x,t,agent,numImages,mu)
+% Evaluates the x-derivative of the Green's function expansion of an 
+% agent's probability concentration for the given inputs. See "Optimal 
+% Decision Strategies for Agents with Asymmetric Decision Thresholds" 
+% (Fitzgerald) for more details.
+
     if agent == 1
         L = p.L1; H = p.H1;
     elseif agent == 2

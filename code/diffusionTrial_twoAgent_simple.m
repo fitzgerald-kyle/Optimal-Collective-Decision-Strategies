@@ -1,6 +1,7 @@
 function [X1,X2,over1,over2,firstAgent] = diffusionTrial_twoAgent_simple(p) 
-% p contains parameters. over1 is true if agent 1 decided on (+); over2 is 
-% true if agent 2 decided on (+).
+% over[1/2] is true if agent [1/2] decided at its upper threshold. 
+% firstAgent is the identity of the first agent to make a decision.
+
     dt = p.dt; D = p.D; 
     mu1 = p.mu1; qp1 = p.qp1; qn1 = p.qn1; H1 = p.H1; L1 = p.L1;
     mu2 = p.mu2; qp2 = p.qp2; qn2 = p.qn2; H2 = p.H2; L2 = p.L2; 

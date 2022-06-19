@@ -1,7 +1,10 @@
 function params = parameters(varargin)
+% Sets all relevant parameters for a two-agent two-alternative
+% forced-choice task in which there are rewards for correct decisions.
+
     if strcmp(varargin{1}, 'p')
         params = varargin{2};
-    else
+    else % set default values
         params.dt = 5e-5;
         params.H1 = 1; params.L1 = -1; 
         params.H2 = 1; params.L2 = -1; % set thresholds

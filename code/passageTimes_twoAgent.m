@@ -1,7 +1,11 @@
 function [PT1H, PT1L, PT2H, PT2L] = passageTimes_twoAgent(p, N, simple, varargin)
+% Returns first passage times for N diffusion trials for the two-agent
+% scenario.
+%
 % varargin contains the identity of the agent on which first passage is
-% conditioned
-    PT1H = [];
+% conditioned.
+
+    PT1H = []; % upper boundary passage times for agent 1, etc
     PT1L = [];
     PT2H = [];
     PT2L = [];
@@ -26,6 +30,7 @@ function [PT1H, PT1L, PT2H, PT2L] = passageTimes_twoAgent(p, N, simple, varargin
             end
         end
     end
+    
     PT1H = sort(PT1H); PT1L = sort(PT1L);
     PT2H = sort(PT2H); PT2L = sort(PT2L);
 end
