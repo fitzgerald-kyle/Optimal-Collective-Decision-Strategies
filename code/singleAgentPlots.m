@@ -1,3 +1,5 @@
+% This script is a bit of a mess... need to come back and clean it up
+
 global mu D
 mu = 1; D = 1;
 
@@ -22,6 +24,7 @@ if FPTfig
     xlabel('Lower threshold (magnitude)'); ylabel('Upper threshold');
     hold off
 end
+
 if exitProbfig
     figure(2)
     h2 = contourf(L, H, condlExitMat'); colorbar; hold on
@@ -29,6 +32,7 @@ if exitProbfig
     xlabel('Lower threshold (magnitude)'); ylabel('Upper threshold');
     hold off
 end
+
 if RRfig
     RH = 1; RL = 2; TI = 5;
     RRmat = zeros(length(H),length(L));
@@ -46,6 +50,7 @@ if RRfig
     set(gcf,'color','w');
     hold off
 end
+
 if RRmaxfig
     TI = 5;
     Rp = 1:-.01:0; Rn = 1:.01:2;
@@ -77,6 +82,7 @@ if RRmaxfig
         RRmatCN(i) = -RR;
         XCN(i,:) = params;
     end
+    
     figure
     plot(Rp, RRmat, '-k'); hold on
     plot(Rp, RRmatCN, '--k');
@@ -145,7 +151,7 @@ for i=201:300
     end
 end
 
-hx = (H-L)/numInt; % even number of subintervals for Simpson's rule (nvm)
+hx = (H-L)/numInt;
 min_char_t = 3*min([H, abs(L)]); tmax = 3*max([H, abs(L)]);
 ht = min([min_char_t/1000, hx^2]); % adheres to CFL condition
 
@@ -179,21 +185,10 @@ T = 1/2 * trapz(t, t.*(fMat(:,1)+fMat(:,2))) + ...
 RR = r / (T + TI); 
 end
 
-function [RR, J] = rewardRate(X,RH,RL,TI)
+function RR = rewardRate(X,RH,RL,TI)
     H = X(1); L = X(2);
     RR = ( RH.*(1-exp(-L)) + RL.*(1-exp(-H)) ) ./ ...
         ( (1-exp(-L)).*(1-exp(-H)).*(L+H) + 2*TI.*(1-exp(-L-H)) );
-    if nargout > 1
-        J(1) = RL.*exp(-H)./( (1-exp(-L)).*(1-exp(-H)).*(L+H) + 2*TI.*(1-exp(-L-H)) ) - ...
-            ( RH.*(1-exp(-L)) + RL.*(1-exp(-H)) ) .* ...
-            ( (1-exp(-H)).*(1-exp(-L)) + exp(-H).*(1-exp(-L)).*(L+H) + 2*TI.*(1-exp(-L-H)) ) ./ ...
-            ( (1-exp(-L)).*(1-exp(-H)).*(L+H) + 2*TI.*(1-exp(-L-H)) ).^2;
-        J(2) = RH.*exp(-L)./( (1-exp(-L)).*(1-exp(-H)).*(L+H) + 2*TI.*(1-exp(-L-H)) ) - ...
-            ( RH.*(1-exp(-L)) + RL.*(1-exp(-H)) ) .* ...
-            ( (1-exp(-H)).*(1-exp(-L)) + exp(-L).*(1-exp(-H)).*(L+H) + 2*TI.*(1-exp(-L-H)) ) ./ ...
-            ( (1-exp(-L)).*(1-exp(-H)).*(L+H) + 2*TI.*(1-exp(-L-H)) ).^2;
-        J = -J;
-    end
 end
 
 function T = RR_expT(H,L)

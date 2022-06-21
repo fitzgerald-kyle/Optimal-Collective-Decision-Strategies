@@ -1,4 +1,6 @@
-function RR = RR_symmAgent_trapInteg(p, X, TI, N, ints)
+function RR = RR_symmAgent_trapIntegration(p, X, TI, N, ints)
+% (Uses the trapezoidal rule to compute reward rate.)
+
 % Calculates expected reward rate for two agents in consecutive
 % environments with random probability of positive or negative associated
 % drift, where decisions are separated by time TI. Agents are "symmetric"

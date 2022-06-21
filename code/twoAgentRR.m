@@ -4,21 +4,19 @@
 TI = 5;
 N = 1e4; % image terms
 
+% See each "if" block for figure descriptions.
 fig1 = 1;
 fig2 = 0;
 fig3 = 0;
 
 if fig1
-    % fix rewards, sweep over thresholds
+% Fix rewards and kicks, sweep over thresholds. Plot RR.
     H = linspace(1.6, 2, 15); L = -linspace(1.6, 2, 15); Rp = 1; Rn = 1;
     RRmat = zeros(length(H),length(L));
     for i= 1:length(H)
         for j= 1:length(L)
             qp = inf;%H(i); 
             qn = inf;
-            %if H(i) == 1 && L(j) == -1
-            %    disp('')
-            %end
             p = parameters('qp1',qp,'qn1',qn,'H1',H(i),'L1',L(j),'R1p',Rp,'R1n',Rn);
             %tic;
             RRmat(i,j) = RR_symmAgent_asymmThresh_simple3(p, [H(i) L(j) qp qn], TI);
@@ -37,13 +35,14 @@ if fig1
 end
 
 if fig2
-    % fix rewards, sweep over thresholds
+% Fix rewards and thresholds, sweep over kicks. Plot RR.
+
     qp = linspace(.1, 1.5, 15); qn = qp; Rp = .4; Rn = 1;
     RRmat = zeros(length(qp),length(qn));
     for i= 1:length(qp)
         for j= 1:length(qn)
-            H = 1.05;%H(i); 
-            L = -.35;%abs(L(j));
+            H = 1.05; 
+            L = -.35;
             p = parameters('qp1',qp(i),'qn1',qn(j),'H1',H,'L1',L,'R1p',Rp,'R1n',Rn);
             %tic;
             RRmat(i,j) = RR_symmAgent_asymmThresh(p, [H L qp(i) qn(j)], TI, N);
@@ -61,7 +60,9 @@ if fig2
 end
 
 if fig3
-    % max RR wrt thresholds and kicks while sweeping over rewards
+% Maximize RR wrt thresholds and kicks while sweeping over rewards,
+% adhering to Rp + Rn = 2. Uses fmincon.
+
     Rp = 1:-.01:0;%linspace(.05,1,20); 
     Rn = 1:.01:2;
     RRmat = zeros(1,length(Rp));
@@ -133,6 +134,8 @@ end
 %end
 
 function [RR,RRstd] = RRsim_simple(p, TI)
+% Monte Carlo simulated reward rates
+
     n = 5e3;
     tvec = zeros(1,n);
     rvec = zeros(1,n);

@@ -1,10 +1,11 @@
-function RR = RR_symmAgent_asymmThresh_simple(p, X, TI, N)
+function RR = RR_symmAgent_Fourier_simple(p, X, TI, N)
 % Here, "simple" refers to an analytically simpler two-choice scenario in 
 % which, if agent 1 makes a decision, agent 2 receives a kick and then is 
 % NOT allowed to continue accumulating evidence; rather, it must
 % immediately decide at the threshold to which it is currently closest.
 
-% integration with MATLAB's "integral"
+% (Uses a Fourier series expansion rather than a Green's function 
+% expansion to compute an agent's probability concentration.)
 
 % Calculates expected reward rate for two agents in consecutive
 % environments with random probability of positive or negative associated

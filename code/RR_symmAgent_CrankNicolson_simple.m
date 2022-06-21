@@ -1,5 +1,6 @@
-function RR = RR_symmAgent_asymmThresh_simple3(p, X, TI)
-% Crank-Nicolson method
+function RR = RR_symmAgent_CrankNicolson_simple(p, X, TI)
+% (Uses the Crank-Nicolson method to solve the Focker-Planck equation and
+% determine an agent's expected reward rate.)
 
 % Calculates expected reward rate for two agents in consecutive
 % environments with random probability of positive or negative associated
@@ -36,15 +37,20 @@ for i=201:300
     end
 end
 
-hx = (p.H1-p.L1)/numInt; % even number of subintervals for Simpson's rule (nvm)
-min_char_t = 3*min([p.H1, abs(p.L1)]); tmax = 3*max([p.H1, abs(p.L1)]);
-ht = min([min_char_t/1000, hx^2]); % adheres to CFL condition
+% Set grid spacing hx and ht, ensuring that the relationship between the
+% two adheres to the CFL condition
+hx = (p.H1-p.L1)/numInt;
+min_char_t = 3*min([p.H1, abs(p.L1)]); 
+tmax = 3*max([p.H1, abs(p.L1)]);
+ht = min([min_char_t/1000, hx^2]);
 
 x = (p.L1:hx:p.H1)';
 t = (0:ht:tmax)'; Nt = length(t);
 
+% Generate the initial condition for probability concentration, doing our
+% best to replicate a delta function
 c0 = zeros(length(x), 1);
-zci = find(diff(sign(x))); % find indices of zero crossings
+zci = find(diff(sign(x)));  % find indices of zero crossings
 if length(zci) == 1
     if abs(x(zci)) < abs(x(zci+1))
         c0(zci) = 1/hx;
@@ -55,14 +61,17 @@ else
     c0(zci(2)) = 1/hx; 
 end
 
+% store probability concentrations for positive and negative drift
 cp = crankNicolson_driftDiff(c0, x, t, p.D, 1);
 cn = crankNicolson_driftDiff(c0, x, t, p.D, -1);
 
+% store approximate FPT densities, one for each pair of threshold and drift
+% direction
 fMat = zeros(Nt, 4);
-fMat(:,1) = cp(end-1,:)/hx; % fHp
-fMat(:,2) = cp(2,:)/hx; % fLp
-fMat(:,3) = cn(end-1,:)/hx; % fHn
-fMat(:,4) = cn(2,:)/hx; % fLn
+fMat(:,1) = cp(end-1,:)/hx;  % fHp
+fMat(:,2) = cp(2,:)/hx;      % fLp
+fMat(:,3) = cn(end-1,:)/hx;  % fHn
+fMat(:,4) = cn(2,:)/hx;      % fLn
 
 int_fMat = zeros(Nt,4); % from t to infinity
 for n = Nt-1:-1:1
@@ -71,23 +80,21 @@ for n = Nt-1:-1:1
     end
 end
 
+% FPT densities conditioned on (WLOG) agent 1 deciding before agent 2
 fHpcond = 2*fMat(:,1).*(int_fMat(:,1)+int_fMat(:,2));
 fLpcond = 2*fMat(:,2).*(int_fMat(:,1)+int_fMat(:,2));
 fHncond = 2*fMat(:,3).*(int_fMat(:,3)+int_fMat(:,4));
 fLncond = 2*fMat(:,4).*(int_fMat(:,3)+int_fMat(:,4));
 
-int_rhoMat = ones(Nt, 2); % crosses H given mu=1; crosses -L given mu=-1
-[intcpNum, intcpDenom] = intc_t(p, x, Nt, cp, 1);
-int_rhoMat(:,1) = intcpNum./intcpDenom;
-[intcnNum, intcnDenom] = intc_t(p, x, Nt, cn, -1);
-int_rhoMat(:,2) = intcnNum./intcnDenom;
+% Store the antiderivative of rho (see "intRho_x" function below). 
+% Columns are 'crosses H given mu=1' and 'crosses -L given mu=-1'.
+int_rhoMat = ones(Nt, 2); 
 
-%k = find(int_rhoMat(:,1)>1);
-%if ~isempty(k)
-%    disp(int_rhoMat(k,1))
-%end
+% pass Nt for dimension compatibility
+int_rhoMat(:,1) = intRho_x(p, x, Nt, cp, 1);
+int_rhoMat(:,2) = intRho_x(p, x, Nt, cn, -1);
 
-numSims = 5e4;
+%numSims = 5e4;
 %figGenerator(p, intcpDenom, fMat(:,1:2), [fHpcond,fLpcond], t, tmax, numSims);
 
 r = exp_reward(p, fHpcond, fLncond, int_rhoMat, t);
@@ -97,6 +104,7 @@ end
 
 function r = exp_reward(p, fHpcond, fLncond, int_rhoMat, t)
 % Expected reward for each agent across all environments, WLOG agent 1.
+
 probAtUpper = 1/2 * ( P_crossBefore(fHpcond, t) + ...
     P_instCrossAfter(fHpcond, int_rhoMat(:,1), t) );
 probAtLower = 1/2 * ( P_crossBefore(fLncond, t) + ...
@@ -108,6 +116,7 @@ end
 function TF = exp_TF(fHpcond, fLpcond, fHncond, fLncond, t)
 % Expected time for the last agent to make a decision (WLOG for agent 2 to
 % decide, conditioned on agent 1 deciding first).
+
 TFp = trapz(t, t.*(fHpcond+fLpcond));
 TFn = trapz(t, t.*(fHncond+fLncond));
 TF = TFp/2 + TFn/2;
@@ -116,6 +125,7 @@ end
 function P = P_crossBefore(fthreshcond, t)
 % Probability that one agent crosses the decision threshold at "thresh",
 % given that it decides before the other agent.
+
 P = trapz(t, fthreshcond);
 end
 
@@ -123,17 +133,21 @@ function P = P_instCrossAfter(fthreshcond, rhoVec, t)
 % Probability that one agent is instantaneously "kicked" across the 
 % decision threshold at "thresh", given the other agent's crossing of 
 % "thresh" before.
+
 fcondrho = fthreshcond.*rhoVec;
 P = trapz(t, fcondrho);
 end
 
-function [intcnum, intcdenom] = intc_t(p, x, Nt, c, mu)
+function intRho = intRho_x(p, x, Nt, c, mu)
+% Evaluate the x-antiderivative of rho (defined at the bottom of pg. 6 in
+% my "Optimal Decision Strategies" notes) using the trapezoidal rule.
+
     intcnum = zeros(Nt, 1); intcdenom = intcnum;
-    lowerBdry = 1/2*(p.H1+p.L1)-p.qp1; 
-    upperBdry = 1/2*(p.H1+p.L1)+p.qn1;
-    if sign(mu)==1 && lowerBdry > p.L1
-        idx = find(diff(sign( x - lowerBdry )));
-        if abs(x(idx(1)+1)-lowerBdry) < abs(x(idx(1))-lowerBdry)
+    lowerBoundary = 1/2*(p.H1+p.L1)-p.qp1; 
+    upperBoundary = 1/2*(p.H1+p.L1)+p.qn1;
+    if sign(mu)==1 && lowerBoundary > p.L1
+        idx = find(diff(sign( x - lowerBoundary )));
+        if abs(x(idx(1)+1)-lowerBoundary) < abs(x(idx(1))-lowerBoundary)
             idx = idx + 1;
         end
         j = idx(1);
@@ -141,12 +155,9 @@ function [intcnum, intcdenom] = intc_t(p, x, Nt, c, mu)
             intcnum(n) = trapz(x(j:end), c(j:end,n));
             intcdenom(n) = trapz(x, c(:,n));
         end
-    elseif sign(mu)==-1 && upperBdry < p.H1
-        idx = find(diff(sign( x - upperBdry )));
-        %if isempty(idx)
-        %    disp('')
-        %end
-        if abs(x(idx(1)+1)-upperBdry) < abs(x(idx(1))-upperBdry)
+    elseif sign(mu)==-1 && upperBoundary < p.H1
+        idx = find(diff(sign( x - upperBoundary )));
+        if abs(x(idx(1)+1)-upperBoundary) < abs(x(idx(1))-upperBoundary)
             idx = idx + 1;
         end
         j = idx(1);
@@ -160,6 +171,8 @@ function [intcnum, intcdenom] = intc_t(p, x, Nt, c, mu)
             intcdenom(n) = intcnum(n);
         end
     end
+    
+    intRho = intcnum ./ intcdenom;
 end
 
 function figGenerator(p, intcpDenom, fMatp, fMatpcond, t, tmax, numSims)
@@ -168,7 +181,7 @@ function figGenerator(p, intcpDenom, fMatp, fMatpcond, t, tmax, numSims)
 % (2) unconditional FPT density (at H) vs t;
 % (3) conditional FPT density (at H) vs t
 
-% NOTE BELOW: passing p assumes mu=1 for agent 1, mu=-1 for agent 2
+% NOTE BELOW: using p assumes mu=1 for agent 1, mu=-1 for agent 2
 w = tmax/200; % bin width
 %p = parameters(p,'dt',min([10^(floor(log10(w))-1), 1e-3]));
 [passTimesH, passTimesL] = passageTimes_oneAgent(p, numSims, 1);
@@ -181,12 +194,14 @@ for i = 1:length(passTimes)
     idx = int64(passTimes(i)/p.dt+1);
     survived(idx:end) = survived(idx:end) - 1;
 end
+
 figure;
 plot(t, intcpDenom, '-r'); hold on
 plot(0:p.dt:passTimes(end), survived/numSims, '.k', 'MarkerSize', 2);
 title('Single-agent survival probability vs time, assuming \mu=1');
 xlabel('Time'); ylabel('Survival probability')
 legend('Crank-Nicolson', 'MC sims')
+
 
 % (2) unconditional FPT density (at H) vs t;
 bins = (w/2:w:tmax-w/2)';
@@ -196,6 +211,7 @@ for i=1:length(bins)
     FPTDH(i) = length(find(passTimesH >= w*(i-1) & passTimesH < w*i))/numSims/w;
     FPTDL(i) = length(find(passTimesL >= w*(i-1) & passTimesL < w*i))/numSims/w;
 end
+
 figure;
 plot(t, fMatp(:,1), '-b'); hold on
 plot(t, fMatp(:,2), '-r');
@@ -206,6 +222,7 @@ xlabel('Time')%,'FontSize',12)
 ylabel('FPT Density')%,'FontSize',12)
 legend('+ threshold', '- threshold', 'MC sims', '')
 
+
 % (3) conditional FPT density (at H) vs t
 numAgentOneFirst = length(passTimes1H)+length(passTimes1L);
 FPTDHcond = zeros(length(bins),1);
@@ -214,6 +231,7 @@ for i=1:length(bins)
     FPTDHcond(i) = length(find(passTimes1H >= w*(i-1) & passTimes1H < w*i))/numAgentOneFirst/w;
     FPTDLcond(i) = length(find(passTimes1L >= w*(i-1) & passTimes1L < w*i))/numAgentOneFirst/w;
 end
+
 figure;
 plot(t, fMatpcond(:,1), '-b'); hold on
 plot(t, fMatpcond(:,2), '-r');
@@ -223,4 +241,5 @@ title('FPT density at \pm threshold (given agent 1 decides first) vs time, assum
 xlabel('Time')%,'FontSize',12)
 ylabel('FPT Density')%,'FontSize',12)
 legend('+ threshold', '- threshold', 'MC sims', '')
+
 end

@@ -1,4 +1,7 @@
-function RR = RR_symmAgent_explicitAntiderivative(p, X, TI, N)
+function RR = RR_symmAgent_Fourier(p, X, TI, N)
+% (Uses a Fourier expansion instead of a Green's function expansion to
+% compute expected reward rate.)
+
 % Calculates expected reward rate for two agents in consecutive
 % environments with random probability of positive or negative associated
 % drift, where decisions are separated by time TI. Agents are "symmetric"
