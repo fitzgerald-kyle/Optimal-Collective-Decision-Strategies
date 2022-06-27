@@ -17,7 +17,7 @@ The above-mentioned papers by Bogacz and Caginalp contain the required prerequis
 And below is a summary of the MATLAB code in this repo:
 
 * "parameters" is the file the controls all parameters relevant to each agent: thresholds, kick magnitudes, rewards at each threshold, etc.
-* Files that begin with "diffusionTrial" run Monte Carlo simulations for agent decisions.
+* Files that begin with "diffusionTrial" run Monte Carlo simulations for agent decisions. Files that begin with "passageTimes" use these MC trials to accumulate simulated first passage times.
 * "c", "dcdx", and "intc_x" all contain explicit series expansions for survival probabilities and related quantities.
 * Files that begin with "RR" calculate expected reward rates in different ways.
     - NOTE: Anywhere you see the word "simple," this refers to a "simpler" type of task in which the second agent to decide is NOT allowed to continue diffusing after the first agent's decision, but instead must IMMEDIATELY decide at the threshold to which it is closest.
