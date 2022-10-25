@@ -10,16 +10,16 @@ My research takes this a step further and lets each agent receive a reward for a
 ## Repository Guide
 The above-mentioned papers by Bogacz and Caginalp contain the required prerequisite knowledge for navigating my writeups and code. I include three other PDFs in this repo:
 
- - <span style="color:red">optimal_strats_asymm_thresh.pdf</span> is the primary reference for the derivations and calculations involved in my code. 
- - <span style="color:red">backward_forward_FPE_methods.pdf</span> is a short writeup on two equivalent methods to compute a single agent's survival probability, based on the forward and backward Fokker-Planck equations. 
- - <span style="color:red">math_bio_11-15-21.pdf</span> contains the slides I presented to the CU Boulder Mathematical Biology Seminar in November 2021.
+ - ***optimal_strats_asymm_thresh.pdf*** is the primary reference for the derivations and calculations involved in my code. 
+ - ***backward_forward_FPE_methods.pdf*** is a short writeup on two equivalent methods to compute a single agent's survival probability, based on the forward and backward Fokker-Planck equations. 
+ - ***math_bio_11-15-21.pdf*** contains the slides I presented to the CU Boulder Mathematical Biology Seminar in November 2021.
 
 And below is a summary of the code in this repo:
 
-- <span style="color:red">parameters.m</span> controls all parameters relevant to each agent: thresholds, kick magnitudes, rewards at each threshold, etc.
-- Files that begin with <span style="color:red">diffusionTrial</span> run Monte Carlo simulations for agent decisions. Files that begin with <span style="color:red">passageTimes</span> use these MC trials to accumulate simulated first passage times.
-- <span style="color:red">c.m</span>, <span style="color:red">dcdx.m</span>, and <span style="color:red">intc_x.m</span> all contain explicit series expansions for survival probabilities and related quantities.
-- Files that begin with <span style="color:red">RR</span> calculate expected reward rates in different ways.
-    - NOTE: Any file whose name has the word <span style="color:red">simple</span> refers to a "simpler" type of task in which the second agent to decide is NOT allowed to continue diffusing after the first agent's decision, but instead must IMMEDIATELY decide at the threshold to which it is closest.
-- <span style="color:red">caginalpFigReplication.m</span> replicates the first few relevant figures in the above paper by Caginalp.
-- <span style="color:red">twoAgentRR.m</span> is the go-to file for figures related to two-agent reward rates.
+- ***parameters.m*** controls all parameters relevant to each agent: thresholds, kick magnitudes, rewards at each threshold, etc.
+- Files that begin with ***"diffusionTrial"*** run Monte Carlo simulations for agent decisions. Files that begin with ***"passageTimes"*** use these MC trials to accumulate simulated first passage times.
+- ***c.m***, ***dcdx.m***, and ***intc_x.m*** all contain explicit series expansions for survival probabilities and related quantities.
+- Files that begin with ***RR*** calculate expected reward rates in different ways.
+    - NOTE: Any file whose name has the word ***"simple"*** refers to a "simpler" type of task in which the second agent to decide is NOT allowed to continue diffusing after the first agent's decision, but instead must IMMEDIATELY decide at the threshold to which it is closest.
+- ***caginalpFigReplication.m*** replicates the first few relevant figures in the above paper by Caginalp.
+- ***twoAgentRR.m*** is the go-to file for figures related to two-agent reward rates.
